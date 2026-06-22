@@ -1,0 +1,41 @@
+<script>
+      // Shared Toast Notification System
+      function showToast(message, type) {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = "toast toast-" + type;
+        const icons = { success: '\u2713', error: '\u2717', warning: '\u26A0', info: '\u2139' };
+        toast.innerHTML = (icons[type] || '') + ' ' + message;
+        container.appendChild(toast);
+        setTimeout(function() {
+          toast.classList.add("toast-out");
+          setTimeout(function() { toast.remove(); }, 300);
+        }, 3000);
+      }
+
+      async function deleteCar(carNumber) {
+        if (!window.confirm("Delete car " + carNumber + "?\nThis action cannot be undone.")) return;
+        const response = await fetch("/cars/" + encodeURIComponent(carNumber), { method: "DELETE" });
+        if (response.ok) {
+          showToast("Car \"" + carNumber + "\" deleted successfully", "success");
+          setTimeout(function() { window.location.reload(); }, 500);
+        } else {
+          const result = await response.json().catch(function() { return { message: "Delete failed" }; });
+          showToast(result.message || "Delete failed", "error");
+        }
+      }
+
+      async function deleteBooking(bookingId) {
+        if (!window.confirm("Delete this booking?\nThis action cannot be undone.")) return;
+        const response = await fetch("/bookings/" + bookingId, { method: "DELETE" });
+        if (response.ok) {
+          showToast("Booking deleted successfully", "success");
+          setTimeout(function() { window.location.reload(); }, 500);
+        } else {
+          const result = await response.json().catch(function() { return { message: "Delete failed" }; });
+          showToast(result.message || "Delete failed", "error");
+        }
+      }
+    </script>
+  </body>
+</html>

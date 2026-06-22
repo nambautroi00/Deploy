@@ -1,100 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Car - <%= car.carNumber %></title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; }
-      header { background: linear-gradient(135deg, #111827, #1e3a5f); color: white; padding: 24px 32px; }
-      header h1 { font-size: 24px; }
-      main { max-width: 640px; margin: 0 auto; padding: 24px; }
-      .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-      label { display: block; margin-top: 16px; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-      input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; font-family: inherit; background: #fff; }
-      input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-      .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; border: none; color: white; text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; margin-top: 20px; }
-      .btn-primary { background: #2563eb; }
-      .btn-secondary { background: #6b7280; }
-      .btn:hover { opacity: 0.85; }
-      .actions { display: flex; gap: 12px; align-items: center; }
-      .hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Edit Car - <%= car.carNumber %></h1>
+<%- include('partials/header', { title: 'Edit Car - ' + car.carNumber }) %>
+
+    <header class="form-page-header">
+      <h1>✏️ Edit Car — <%= car.carNumber %></h1>
     </header>
-    <main>
-      <div class="card">
-        <form id="car-edit-form">
-          <label for="carNumber">Car Number *</label>
-          <input id="carNumber" name="carNumber" value="<%= car.carNumber %>" required />
 
-          <label for="capacity">Capacity (seats) *</label>
-          <input id="capacity" name="capacity" type="number" min="1" value="<%= car.capacity %>" required />
+    <main class="app-main">
+      <div class="form-container">
+        <div class="form-card">
+          <form id="car-edit-form">
+            <div class="form-group">
+              <label for="carNumber">Car Number <span class="required">*</span></label>
+              <input id="carNumber" name="carNumber" class="form-control" value="<%= car.carNumber %>" required />
+            </div>
 
-          <label for="status">Status</label>
-          <select id="status" name="status">
-            <option value="available" <%= car.status === 'available' ? 'selected' : '' %>>Available</option>
-            <option value="rented" <%= car.status === 'rented' ? 'selected' : '' %>>Rented</option>
-            <option value="maintenance" <%= car.status === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
-          </select>
+            <div class="form-group">
+              <label for="capacity">Capacity (seats) <span class="required">*</span></label>
+              <input id="capacity" name="capacity" type="number" min="1" class="form-control" value="<%= car.capacity %>" required />
+            </div>
 
-          <label for="pricePerDay">Price Per Day ($) *</label>
-          <input id="pricePerDay" name="pricePerDay" type="number" min="0" step="0.01" value="<%= car.pricePerDay %>" required />
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" name="status" class="form-control">
+                <option value="available" <%= car.status === 'available' ? 'selected' : '' %>>✅ Available</option>
+                <option value="rented" <%= car.status === 'rented' ? 'selected' : '' %>>🔴 Rented</option>
+                <option value="maintenance" <%= car.status === 'maintenance' ? 'selected' : '' %>>🔧 Maintenance</option>
+              </select>
+            </div>
 
-          <label for="features">Features</label>
-          <textarea id="features" name="features" placeholder='Separate with commas, e.g. "GPS, Air-conditioner, Bluetooth"'><%= car.features && car.features.length ? car.features.join(', ') : '' %></textarea>
-          <div class="hint">Leave blank for no features.</div>
+            <div class="form-group">
+              <label for="pricePerDay">Price Per Day ($) <span class="required">*</span></label>
+              <input id="pricePerDay" name="pricePerDay" type="number" min="0" step="0.01" class="form-control" value="<%= car.pricePerDay %>" required />
+            </div>
 
-          <div class="actions">
-            <button class="btn btn-primary" type="submit">Save Changes</button>
-            <a class="btn btn-secondary" href="/">Cancel</a>
-          </div>
-          <p id="status" style="margin-top:12px; font-weight:600;"></p>
-        </form>
+            <div class="form-group">
+              <label for="features">Features</label>
+              <textarea id="features" name="features" class="form-control" placeholder='e.g. GPS, Air-conditioner, Bluetooth'><%= car.features && car.features.length ? car.features.join(', ') : '' %></textarea>
+              <div class="form-hint">Separate features with commas. Leave blank for no features.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="image">Car Image</label>
+              <% if (car.image) { %>
+                <div style="margin-bottom: 8px;">
+                  <img src="<%= car.image %>" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid #e5e7eb;" />
+                  <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">Current image. Upload a new one to replace.</p>
+                </div>
+              <% } %>
+              <input id="image" name="image" type="file" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp" />
+              <div class="form-hint">Accepted formats: JPEG, PNG, GIF, WebP. Max size: 5MB.</div>
+              <div id="image-preview" style="margin-top: 10px; display: none;"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-lg" type="submit" id="submit-btn">
+                💾 Save Changes
+              </button>
+              <a class="btn btn-secondary" href="/">Cancel</a>
+            </div>
+            <div class="form-status" id="status"></div>
+          </form>
+        </div>
       </div>
     </main>
 
     <script>
-      const form = document.getElementById("car-edit-form");
-      const status = document.getElementById("status");
+      (function() {
+        var form = document.getElementById("car-edit-form");
+        var status = document.getElementById("status");
+        var submitBtn = document.getElementById("submit-btn");
+        var imageInput = document.getElementById("image");
+        var preview = document.getElementById("image-preview");
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const featuresRaw = form.features.value.trim();
-        const features = featuresRaw ? featuresRaw.split(",").map(f => f.trim()).filter(Boolean) : [];
-
-        const payload = {
-          carNumber: form.carNumber.value.trim(),
-          capacity: parseInt(form.capacity.value, 10),
-          status: form.status.value,
-          pricePerDay: parseFloat(form.pricePerDay.value),
-          features,
-        };
-
-        const carNumber = encodeURIComponent('<%= car.carNumber %>');
-        const response = await fetch("/cars/" + carNumber, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        // Image preview on file select
+        imageInput.addEventListener("change", function() {
+          var file = imageInput.files[0];
+          if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              preview.innerHTML = '<img src="' + e.target.result + '" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid #e5e7eb;" />';
+              preview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.display = "none";
+            preview.innerHTML = "";
+          }
         });
 
-        const result = await response.json().catch(() => ({}));
+        form.addEventListener("submit", async function(event) {
+          event.preventDefault();
 
-        if (!response.ok) {
-          status.textContent = result.message || "Failed to update car";
-          status.style.color = "#dc2626";
-          return;
-        }
+          var formData = new FormData();
+          formData.append("carNumber", form.carNumber.value.trim());
+          formData.append("capacity", form.capacity.value);
+          formData.append("status", form.status.value);
+          formData.append("pricePerDay", form.pricePerDay.value);
 
-        status.textContent = "Car updated successfully! Redirecting...";
-        status.style.color = "#16a34a";
-        setTimeout(() => { window.location.href = "/"; }, 800);
-      });
+          var featuresRaw = form.features.value.trim();
+          var features = featuresRaw ? featuresRaw.split(",").map(function(f) { return f.trim(); }).filter(Boolean) : [];
+          features.forEach(function(f, i) { formData.append("features[" + i + "]", f); });
+
+          if (imageInput.files[0]) {
+            formData.append("image", imageInput.files[0]);
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+          status.className = "form-status";
+          status.style.display = "none";
+
+          var carNumber = encodeURIComponent('<%= car.carNumber %>');
+          var response = await fetch("/cars/" + carNumber, {
+            method: "PUT",
+            body: formData,
+          });
+
+          var result = await response.json().catch(function() { return {}; });
+
+          if (!response.ok) {
+            status.textContent = result.message || "Failed to update car";
+            status.className = "form-status visible error";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "💾 Save Changes";
+            return;
+          }
+
+          status.textContent = "✅ Car updated successfully! Redirecting...";
+          status.className = "form-status visible success";
+          setTimeout(function() { window.location.href = "/"; }, 800);
+        });
+      })();
     </script>
-  </body>
-</html>
+
+<%- include('partials/footer') %>

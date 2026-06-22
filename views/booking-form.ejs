@@ -1,91 +1,152 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Booking</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; }
-      header { background: linear-gradient(135deg, #111827, #1e3a5f); color: white; padding: 24px 32px; }
-      header h1 { font-size: 24px; }
-      main { max-width: 640px; margin: 0 auto; padding: 24px; }
-      .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-      label { display: block; margin-top: 16px; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-      input, select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; font-family: inherit; background: #fff; }
-      input:focus, select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-      .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; border: none; color: white; text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; margin-top: 20px; }
-      .btn-primary { background: #2563eb; }
-      .btn-secondary { background: #6b7280; }
-      .btn:hover { opacity: 0.85; }
-      .actions { display: flex; gap: 12px; align-items: center; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Create New Booking</h1>
+<%- include('partials/header', { title: 'Create Booking' }) %>
+
+    <header class="form-page-header">
+      <h1>📅 Create New Booking</h1>
     </header>
-    <main>
-      <div class="card">
-        <form id="booking-form">
-          <label for="customerName">Customer Name *</label>
-          <input id="customerName" name="customerName" placeholder="e.g. John Doe" required />
 
-          <label for="carNumber">Car *</label>
-          <select id="carNumber" name="carNumber" required>
-            <option value="">-- Select a car --</option>
-            <% cars.forEach((car) => { %>
-              <option value="<%= car.carNumber %>"><%= car.carNumber %> ($<%= Number(car.pricePerDay).toFixed(2) %>/day)</option>
-            <% }) %>
-          </select>
+    <main class="app-main">
+      <div class="form-container">
+        <div class="form-card">
+          <form id="booking-form">
+            <div class="form-group">
+              <label for="customerName">Customer Name <span class="required">*</span></label>
+              <input id="customerName" name="customerName" class="form-control" placeholder="e.g. John Doe" required />
+            </div>
 
-          <label for="startDate">Start Date *</label>
-          <input id="startDate" name="startDate" type="date" required />
+            <div class="form-group">
+              <label for="carNumber">Select Car <span class="required">*</span></label>
+              <select id="carNumber" name="carNumber" class="form-control" required>
+                <option value="">-- Select a car --</option>
+                <% cars.forEach(function(car) { %>
+                  <option value="<%= car.carNumber %>" data-price="<%= car.pricePerDay %>">
+                    <%= car.carNumber %> — $<%= Number(car.pricePerDay).toFixed(2) %>/day
+                    <% if (car.capacity) { %>(<%= car.capacity %> seats)<% } %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
 
-          <label for="endDate">End Date *</label>
-          <input id="endDate" name="endDate" type="date" required />
+            <div class="form-group">
+              <label for="startDate">Start Date <span class="required">*</span></label>
+              <input id="startDate" name="startDate" type="date" class="form-control" required />
+            </div>
 
-          <div class="actions">
-            <button class="btn btn-primary" type="submit">Create Booking</button>
-            <a class="btn btn-secondary" href="/">Cancel</a>
-          </div>
-          <p id="status" style="margin-top:12px; font-weight:600;"></p>
-        </form>
+            <div class="form-group">
+              <label for="endDate">End Date <span class="required">*</span></label>
+              <input id="endDate" name="endDate" type="date" class="form-control" required />
+            </div>
+
+            <!-- Live Price Preview -->
+            <div class="price-preview" id="price-preview">
+              <div class="price-row">
+                <span>Price per day</span>
+                <span class="price-value" id="ppd-display">$0.00</span>
+              </div>
+              <div class="price-row">
+                <span>Rental days</span>
+                <span class="price-value" id="days-display">0</span>
+              </div>
+              <div class="price-row total">
+                <span>Total Amount</span>
+                <span class="price-value" id="total-display">$0.00</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-lg" type="submit" id="submit-btn">
+                📅 Create Booking
+              </button>
+              <a class="btn btn-secondary" href="/">Cancel</a>
+            </div>
+            <div class="form-status" id="status"></div>
+          </form>
+        </div>
       </div>
     </main>
 
     <script>
-      const form = document.getElementById("booking-form");
-      const status = document.getElementById("status");
+      (function() {
+        var form = document.getElementById("booking-form");
+        var status = document.getElementById("status");
+        var submitBtn = document.getElementById("submit-btn");
+        var pricePreview = document.getElementById("price-preview");
+        var ppdDisplay = document.getElementById("ppd-display");
+        var daysDisplay = document.getElementById("days-display");
+        var totalDisplay = document.getElementById("total-display");
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+        var carSelect = document.getElementById("carNumber");
+        var startInput = document.getElementById("startDate");
+        var endInput = document.getElementById("endDate");
 
-        const payload = {
-          customerName: form.customerName.value.trim(),
-          carNumber: form.carNumber.value,
-          startDate: form.startDate.value,
-          endDate: form.endDate.value,
-        };
+        // Set min date to today
+        var today = new Date().toISOString().slice(0, 10);
+        startInput.setAttribute("min", today);
+        endInput.setAttribute("min", today);
 
-        const response = await fetch("/bookings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        // Live price calculation
+        function updatePricePreview() {
+          var selected = carSelect.options[carSelect.selectedIndex];
+          var pricePerDay = selected && selected.dataset.price ? parseFloat(selected.dataset.price) : 0;
+          var startVal = startInput.value;
+          var endVal = endInput.value;
 
-        const result = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          status.textContent = result.message || "Failed to create booking";
-          status.style.color = "#dc2626";
-          return;
+          if (pricePerDay > 0 && startVal && endVal) {
+            var start = new Date(startVal);
+            var end = new Date(endVal);
+            if (end > start) {
+              var diff = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+              var total = diff * pricePerDay;
+              ppdDisplay.textContent = "$" + pricePerDay.toFixed(2);
+              daysDisplay.textContent = diff + " day" + (diff > 1 ? "s" : "");
+              totalDisplay.textContent = "$" + total.toFixed(2);
+              pricePreview.classList.add("visible");
+              return;
+            }
+          }
+          pricePreview.classList.remove("visible");
         }
 
-        status.textContent = "Booking created successfully! Redirecting...";
-        status.style.color = "#16a34a";
-        setTimeout(() => { window.location.href = "/"; }, 800);
-      });
+        carSelect.addEventListener("change", updatePricePreview);
+        startInput.addEventListener("change", updatePricePreview);
+        endInput.addEventListener("change", updatePricePreview);
+
+        // Form submission
+        form.addEventListener("submit", async function(event) {
+          event.preventDefault();
+
+          var payload = {
+            customerName: form.customerName.value.trim(),
+            carNumber: form.carNumber.value,
+            startDate: form.startDate.value,
+            endDate: form.endDate.value,
+          };
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner"></span> Creating...';
+          status.className = "form-status";
+          status.style.display = "none";
+
+          var response = await fetch("/bookings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          var result = await response.json().catch(function() { return {}; });
+
+          if (!response.ok) {
+            status.textContent = result.message || "Failed to create booking";
+            status.className = "form-status visible error";
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = "📅 Create Booking";
+            return;
+          }
+
+          status.textContent = "✅ Booking created successfully! Redirecting...";
+          status.className = "form-status visible success";
+          setTimeout(function() { window.location.href = "/"; }, 800);
+        });
+      })();
     </script>
-  </body>
-</html>
+
+<%- include('partials/footer') %>

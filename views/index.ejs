@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Rental Management System</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; }
+      header { background: linear-gradient(135deg, #111827, #1e3a5f); color: white; padding: 28px 32px; }
+      header h1 { font-size: 28px; margin-bottom: 6px; }
+      header p { opacity: 0.8; margin-bottom: 16px; }
+      .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; border: none; color: white; text-decoration: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
+      .btn:hover { opacity: 0.85; }
+      .btn-primary { background: #2563eb; }
+      .btn-success { background: #16a34a; }
+      .btn-warning { background: #d97706; }
+      .btn-danger { background: #dc2626; }
+      .btn-sm { padding: 6px 12px; font-size: 13px; }
+      main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+      .section-title { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+      .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 32px; }
+      table { width: 100%; border-collapse: collapse; }
+      th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e5e7eb; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; }
+      td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+      tr:hover td { background: #f9fafb; }
+      .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+      .badge-available { background: #d1fae5; color: #065f46; }
+      .badge-rented { background: #fef3c7; color: #92400e; }
+      .badge-maintenance { background: #fee2e2; color: #991b1b; }
+      .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .empty-msg { color: #9ca3af; font-style: italic; padding: 20px 0; text-align: center; }
+      .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 600; z-index: 999; display: none; animation: slideIn 0.3s ease; }
+      .toast-success { background: #16a34a; }
+      .toast-error { background: #dc2626; }
+      @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+  </head>
+  <body>
+    <div class="toast" id="toast"></div>
+    <header>
+      <h1>Car Rental Management System</h1>
+      <p>Manage your fleet, bookings, and rental payments.</p>
+      <a class="btn btn-primary" href="/cars/new">+ Add Car</a>
+      <a class="btn btn-success" href="/bookings/new">+ Create Booking</a>
+    </header>
+    <main>
+      <!-- Cars Section -->
+      <div class="card">
+        <div class="section-title">
+          <span>Car Fleet</span>
+          <a class="btn btn-primary btn-sm" href="/cars/new">+ Add Car</a>
+        </div>
+        <% if (cars.length === 0) { %>
+          <div class="empty-msg">No cars available. Click "Add Car" to get started.</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Car Number</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>Price / Day</th>
+                <th>Features</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% cars.forEach((car) => { %>
+                <tr>
+                  <td><strong><%= car.carNumber %></strong></td>
+                  <td><%= car.capacity %> seats</td>
+                  <td>
+                    <span class="badge badge-<%= car.status %>"><%= car.status %></span>
+                  </td>
+                  <td>$<%= Number(car.pricePerDay).toFixed(2) %></td>
+                  <td><%= car.features && car.features.length ? car.features.join(', ') : '—' %></td>
+                  <td>
+                    <div class="actions">
+                      <a class="btn btn-warning btn-sm" href="/cars/<%= car.carNumber %>/edit">Edit</a>
+                      <button class="btn btn-danger btn-sm" onclick="deleteCar('<%= car.carNumber %>')">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+      <!-- Bookings Section -->
+      <div class="card">
+        <div class="section-title">
+          <span>Bookings</span>
+          <a class="btn btn-success btn-sm" href="/bookings/new">+ Create Booking</a>
+        </div>
+        <% if (bookings.length === 0) { %>
+          <div class="empty-msg">No bookings yet. Click "Create Booking" to start.</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Car</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% bookings.forEach((booking) => { %>
+                <tr>
+                  <td><%= booking.customerName %></td>
+                  <td><%= booking.carNumber %></td>
+                  <td><%= new Date(booking.startDate).toLocaleDateString() %></td>
+                  <td><%= new Date(booking.endDate).toLocaleDateString() %></td>
+                  <td><strong>$<%= Number(booking.totalAmount).toFixed(2) %></strong></td>
+                  <td>
+                    <div class="actions">
+                      <a class="btn btn-warning btn-sm" href="/bookings/<%= booking._id %>/edit">Edit</a>
+                      <button class="btn btn-danger btn-sm" onclick="deleteBooking('<%= booking._id %>')">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </main>
+
+    <script>
+      function showToast(message, type) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.className = "toast toast-" + type;
+        toast.style.display = "block";
+        setTimeout(() => { toast.style.display = "none"; }, 3000);
+      }
+
+      async function deleteCar(carNumber) {
+        if (!window.confirm("Delete car " + carNumber + "?")) return;
+        const response = await fetch("/cars/" + encodeURIComponent(carNumber), { method: "DELETE" });
+        if (response.ok) {
+          showToast("Car deleted successfully", "success");
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          const result = await response.json().catch(() => ({ message: "Delete failed" }));
+          showToast(result.message || "Delete failed", "error");
+        }
+      }
+
+      async function deleteBooking(bookingId) {
+        if (!window.confirm("Delete this booking?")) return;
+        const response = await fetch("/bookings/" + bookingId, { method: "DELETE" });
+        if (response.ok) {
+          showToast("Booking deleted successfully", "success");
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          const result = await response.json().catch(() => ({ message: "Delete failed" }));
+          showToast(result.message || "Delete failed", "error");
+        }
+      }
+    </script>
+  </body>
+</html>

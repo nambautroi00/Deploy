@@ -5,6 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Car Rental Management</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <style>
+      .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .user-menu .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255,255,255,0.3);
+      }
+      .user-menu .user-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: white;
+      }
+      .user-menu .logout-btn {
+        font-size: 13px;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.2s;
+      }
+      .user-menu .logout-btn:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <div class="toast-container" id="toast-container"></div>

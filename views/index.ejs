@@ -10,6 +10,17 @@
           </div>
         </div>
         <div class="header-actions">
+          <% if (typeof user !== 'undefined' && user) { %>
+            <div class="user-menu">
+              <% if (user.avatar) { %>
+                <img class="user-avatar" src="<%= user.avatar %>" alt="<%= user.displayName %>" />
+              <% } else { %>
+                <div style="width:36px;height:36px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:16px;color:white;"><%= user.displayName.charAt(0) %></div>
+              <% } %>
+              <span class="user-name"><%= user.displayName %></span>
+              <a class="logout-btn" href="/auth/logout">Logout</a>
+            </div>
+          <% } %>
           <a class="btn btn-primary" href="/cars/new">➕ Add Car</a>
           <a class="btn btn-success" href="/bookings/new">📅 Create Booking</a>
         </div>
